@@ -41,16 +41,50 @@
 
     <!-- Page content -->
     <div class="container-fluid">
-            <h2>{{ course.name }}</h2>
-            <div class="card-columns-vertical">
-                {% for lesson in course.lesson_set.all %}
-                    <div class="card mt-1">
-                        <div class="card-header"><h5>Lesson {{lesson.order|add:1}}: {{lesson.title}}</h5></div>
-                        <div class="card-body">{{lesson.content}}</div>
-                    </div>
-                {% endfor %}
+        <h2>{{ course.name }}</h2>
+        <div class="card-columns-vertical">
+            {% for lesson in course.lesson_set.all %}
+                <div class="card mt-1">
+                    <div class="card-header"><h5>Lesson {{lesson.order|add:1}}: {{lesson.title}}</h5></div>
+                    <div class="card-body">{{lesson.content}}</div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Course detail template -->
+        {% if user.is_authenticated %}
+            <!-- Take Exam Button -->
+            <div class="mt-3">
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#examSection" aria-expanded="false" aria-controls="examSection">
+                    Start Exam
+                </button>
             </div>
-            <!-- Course detail template changes go here -->
+
+            <!-- Collapsible Exam Section -->
+            <div class="collapse mt-3" id="examSection">
+                <form action="{% url 'onlinecourse:submit' course.id %}" method="post">
+                    {% csrf_token %}
+                    {% for question in course.question_set.all %}
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <strong>Question {{ forloop.counter }}:</strong> {{ question.question_text }}
+                            </div>
+                            <div class="card-body">
+                                {% for choice in question.choice_set.all %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="choice" id="choice{{ choice.id }}" value="{{ choice.id }}">
+                                        <label class="form-check-label" for="choice{{ choice.id }}">
+                                            {{ choice.choice_text }}
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-success mt-3">Submit Exam</button>
+                </form>
+            </div>
+        {% endif %}
     </div>
 </body>
 </html>
